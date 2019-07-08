@@ -48,11 +48,13 @@ using boost::smatch;
 
 //string gcc_compile_cpp_cmd = "g++ -std=c++11 -fmax-errors=2 -Wall -c"; // -fmax-errors=2是因为某些错误需要两条错误信息
 //string gcc_compile_h_cmd = "g++ -std=c++11 -fmax-errors=2 -Wall";
-string gcc_compile_cpp_cmd = "g++ -std=c++11 -Wall -c"; // -fmax-errors=2是因为某些错误需要两条错误信息
+//string gcc_compile_cpp_cmd = "g++ -std=c++11 -Wall -c"; // -fmax-errors=2是因为某些错误需要两条错误信息
+string gcc_compile_cpp_cmd = "cl /c";
 string gcc_compile_h_cmd = "g++ -std=c++11 -Wall";
 
 // 如果使用了<thread>或者<future>里的东西，就需要-pthread这个参数。注意，不是-lpthread，不过效果似乎是一样的。
 #if defined(__CYGWIN__) || defined(_WIN32)
+//string gcc_link_cmd = "g++ -std=c++11 -fmax-errors=1";
 string gcc_link_cmd = "g++ -std=c++11 -fmax-errors=1";
 #else
 string gcc_link_cmd = "g++ -std=c++11 -fmax-errors=1 -pthread";
@@ -278,7 +280,8 @@ bool build_exe()
 
         // 根据.cpp文件的名字，确定.o文件的名字
         fs::path obj_path = shadow(src_path);
-        obj_path += ".o";
+        //obj_path += ".o";
+		obj_path += ".obj";
 
         //
         //FileEntityPtr obj = makeVulnerableFileEntity(obj_path);

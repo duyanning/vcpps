@@ -1,4 +1,5 @@
 #include "config.h"
+#include <regex>
 #include "Cpp2ObjAction.h"
 //#include "VulnerableFileEntity.h"
 #include "FileEntity.h"
@@ -26,6 +27,9 @@ bool Cpp2ObjAction::execute(const DepInfo& info)
     FileEntityPtr obj = static_pointer_cast<FileEntity>(info.target);
     fs::path obj_path = obj->path();
 
+	fs::path showIncludes_path = obj_path;
+	showIncludes_path += ".showIncludes";
+
     fs::path dep_path = obj_path;
     dep_path += ".d";
 
@@ -33,7 +37,7 @@ bool Cpp2ObjAction::execute(const DepInfo& info)
     // birthcert_path += ".birthcert";
 
     string cmd = gcc_compile_cpp_cmd;
-    cmd += " -o";
+    cmd += " /Fo:";
 
     cmd += " ";
     cmd += obj_path.string();
@@ -41,7 +45,17 @@ bool Cpp2ObjAction::execute(const DepInfo& info)
     cmd += " ";
     cmd += cpp_path.string();
 
-    cmd += " -fpch-deps -MMD -MF " + dep_path.string();
+    //cmd += " -fpch-deps -MMD -MF " + dep_path.string();
+	cmd += R"( /showIncludes | sed -r -e "/Note: including file:[[:space:]]+C:\\\\Program Files/d" -e "/Note: including file:/w)";
+	cmd += " ";
+	string showIncludes_path_string = showIncludes_path.string();
+	showIncludes_path_string = std::regex_replace(showIncludes_path_string, std::regex(R"(\\)"), R"(\\\\)"); // \换为\\\\，但因为前一个是正则，所以得转义，后边那个不用。
+	cmd += showIncludes_path_string;
+	cmd += R"(")";
+
+	/*
+	cl /showIncludes main.cpp  | sed -r -e "/Note: including file:[[:space:]]+C:\\\\Program Files/d" -e "/Note: including file:/w a.txt"
+	*/
 
     MINILOG(build_exe_summay_logger, "compiling " << cpp_path.filename().string());
     MINILOG(build_exe_detail_logger, cmd);
