@@ -1,0 +1,16 @@
+.svn
+Debug
+Release
+lib
+ipch
+*.sdf
+*.opensdf
+*.suo
+*.user
+debug
+release
+*.gch
+*.depend
+*.layout
+.vs
+*.filters
