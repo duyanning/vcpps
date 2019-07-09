@@ -34,7 +34,8 @@ bool Obj2ExeAction::execute(const DepInfo& info)
     // birthcert_path += ".birthcert";
 
     string cmd = gcc_link_cmd;
-    cmd += " -o";
+    //cmd += " -o";
+	cmd += " /Fe:";
 
     cmd += " ";
 

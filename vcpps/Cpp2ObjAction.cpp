@@ -49,13 +49,10 @@ bool Cpp2ObjAction::execute(const DepInfo& info)
 	cmd += R"( /showIncludes | sed -r -e "/Note: including file:[[:space:]]+C:\\\\Program Files/d" -e "/Note: including file:/w)";
 	cmd += " ";
 	string showIncludes_path_string = showIncludes_path.string();
-	showIncludes_path_string = std::regex_replace(showIncludes_path_string, std::regex(R"(\\)"), R"(\\\\)"); // \换为\\\\，但因为前一个是正则，所以得转义，后边那个不用。
+	showIncludes_path_string = regex_replace(showIncludes_path_string, std::regex(R"(\\)"), R"(\\\\)"); // \换为\\\\，但因为前一个是正则，所以得转义，后边那个不用。
 	cmd += showIncludes_path_string;
 	cmd += R"(")";
-
-	/*
-	cl /showIncludes main.cpp  | sed -r -e "/Note: including file:[[:space:]]+C:\\\\Program Files/d" -e "/Note: including file:/w a.txt"
-	*/
+	cmd += R"( -e "/Note: including file:/d")";
 
     MINILOG(build_exe_summay_logger, "compiling " << cpp_path.filename().string());
     MINILOG(build_exe_detail_logger, cmd);
@@ -73,6 +70,45 @@ bool Cpp2ObjAction::execute(const DepInfo& info)
     //cout << "cpp2obj:" << gcc_status << endl;
     if (gcc_status)             // 非0就是代表失败了
         return false;
+
+	// 从.showIncludes文件生成.d文件
+	ifstream ifs_showIncludes(showIncludes_path.string());
+	assert(ifs_showIncludes);
+	unordered_set<string> path_set; // 利用set排除重复路径
+	while (ifs_showIncludes) {
+		// Note: including file: C:\Users\duyanning\Desktop\test\a/f.h
+		string t1, t2, t3;
+		ifs_showIncludes >> t1 >> t2 >> t3; // skip
+		string a_path;
+		ifs_showIncludes >> a_path;
+		//cout << "a path: " << a_path << endl;
+		if (a_path == "")
+			break;
+		a_path = regex_replace(a_path, std::regex(R"(/)"), R"(\)");
+		path_set.insert(a_path);
+	}
+
+	//for (auto x : path_set) {
+	//	cout << "a path: " << x << endl;
+	//}
+
+	ofstream ofs_d{ dep_path.string() };
+	ofs_d << obj_path.string() << ": \\" << endl;
+	ofs_d << " " << cpp_path.string() << " \\" << endl;
+	auto total_headers = path_set.size();
+	for (auto header : path_set) {
+		ofs_d << " " << header;
+		total_headers--;
+		if (total_headers > 0) {
+			ofs_d << " \\";
+		}
+		ofs_d << endl;
+	}
+
+
+
+
+
 
     // 产生出生证明文件（gcc编译时，如果遇到#include的头文件不存在，就算fatal error，也不会生成.d文件）
     //obj->generate_birth_cert(dep_path);

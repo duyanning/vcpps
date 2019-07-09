@@ -49,13 +49,13 @@ using boost::smatch;
 //string gcc_compile_cpp_cmd = "g++ -std=c++11 -fmax-errors=2 -Wall -c"; // -fmax-errors=2是因为某些错误需要两条错误信息
 //string gcc_compile_h_cmd = "g++ -std=c++11 -fmax-errors=2 -Wall";
 //string gcc_compile_cpp_cmd = "g++ -std=c++11 -Wall -c"; // -fmax-errors=2是因为某些错误需要两条错误信息
-string gcc_compile_cpp_cmd = "cl /c";
+string gcc_compile_cpp_cmd = "cl /nologo /EHsc /c";
 string gcc_compile_h_cmd = "g++ -std=c++11 -Wall";
 
 // 如果使用了<thread>或者<future>里的东西，就需要-pthread这个参数。注意，不是-lpthread，不过效果似乎是一样的。
 #if defined(__CYGWIN__) || defined(_WIN32)
 //string gcc_link_cmd = "g++ -std=c++11 -fmax-errors=1";
-string gcc_link_cmd = "g++ -std=c++11 -fmax-errors=1";
+string gcc_link_cmd = "cl /nologo";
 #else
 string gcc_link_cmd = "g++ -std=c++11 -fmax-errors=1 -pthread";
 #endif
@@ -165,7 +165,8 @@ try {
 
     // 加载配置文件
     fs::path cfg_path = get_home();
-    cfg_path /= ".cpps/config.txt";
+    //cfg_path /= ".cpps/config.txt";
+	cfg_path /= ".cpps/vconfig.txt";
     ifstream ifs(cfg_path.string());
     if (ifs) {
         po::store(parse_config_file(ifs, config_opts), vm);
