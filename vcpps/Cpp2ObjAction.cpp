@@ -53,6 +53,11 @@ bool Cpp2ObjAction::execute(const DepInfo& info)
 	cmd += showIncludes_path_string;
 	cmd += R"(")";
 	cmd += R"( -e "/Note: including file:/d")";
+	//cmd += R"( -e "/^[[:space:]]*$/d")";
+	cmd += R"( -e "/^)";
+	cmd += cpp_path.filename().string(); // cl每编译一个文件之前，会输出该文件的名字，无法关闭，只能用sed剔除
+	cmd += R"($/d")";
+	cmd += R"( | finderror)";
 
     MINILOG(build_exe_summay_logger, "compiling " << cpp_path.filename().string());
     MINILOG(build_exe_detail_logger, cmd);
