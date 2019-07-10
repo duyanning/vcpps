@@ -66,6 +66,8 @@ fs::path script_file;           // 命令行上指定的脚本路径（这是个
 vector<fs::path> sources; // 所有.cpp文件的绝对路径
 vector<string> libs; // 库的名称，即链接时命令行上-l之后的部分
 vector<fs::path> headers_to_pc; // 所有需要预编译的头文件的绝对路径
+vector<fs::path> sources_to_pc; // 所有需要预编译的.cpp文件的绝对路径(vc的头文件不能直接编译，必须被#include在一个.cpp文件中编译。)
+map<fs::path, fs::path> source2header_to_pc; // 预编译头文件跟对应的.cpp的对应关系
 string extra_compile_flags; // 编译时用的其他选项
 string extra_link_flags; // 链接时用的其他选项
 
@@ -83,6 +85,7 @@ int max_line_scan = -1;              // 最多扫描这么多行，-1代表全�
 string output_name;
 
 void collect_info();
+bool build_exe();
 bool build();
 void run(int argc, char* argv[]);
 void generate_main_file(string main_file__name);
@@ -263,6 +266,28 @@ catch (int exit_code) {
     return exit_code;
 }
 
+bool is_one_of(fs::path file, const vector<fs::path>& file_set)
+{
+	if (std::find(std::begin(file_set), std::end(file_set), file) == std::end(file_set)) {
+		return false;
+	}
+
+	return true;
+}
+
+void make_sure_these_at_the_head(vector<fs::path>& sources_to_pc, vector<fs::path>& sources)
+{
+	vector<fs::path> original_sources{ sources };
+	sources.clear();
+	sources = sources_to_pc;
+
+	for (auto src : original_sources) {
+		if (!is_one_of(src, sources_to_pc)) {
+			sources.push_back(src);
+		}
+		
+	}
+}
 
 bool build_exe()
 {
@@ -277,6 +302,11 @@ bool build_exe()
 
     PhonyEntityPtr update_dependency = makePhonyEntity("update dependency graph");
 
+
+	// 将sources中跟预编译头文件相关的.cpp提到到最前边，以便先行编译。
+	make_sure_these_at_the_head(sources_to_pc, sources);
+	assert(sources_to_pc.size() <= 1);
+	
     for (auto src_path : sources) {
 
         // 根据.cpp文件的名字，确定.o文件的名字
@@ -286,8 +316,31 @@ bool build_exe()
 
         //
         //FileEntityPtr obj = makeVulnerableFileEntity(obj_path);
-        FileEntityPtr obj = makeFileEntity(obj_path);
-        obj->addAction(makeCpp2ObjAction());
+
+		string additional_options = "";
+		if (headers_to_pc.empty()) { // 如果压根没有预编译头文件
+
+		}
+		else {
+			//fs::path h_path = source2header_to_pc[src_path];
+			fs::path h_path = headers_to_pc[0];
+			fs::path pch_path = shadow(h_path);
+			pch_path += ".pch";
+
+			additional_options += "/Fp: ";
+			additional_options += pch_path.string();
+			if (is_one_of(src_path, sources_to_pc)) { // 用于生成预编译头文件的
+				additional_options += " /Yc";
+			}
+			else { // 使用预编译头文件的
+				additional_options += " /Yu";
+			}
+			additional_options += h_path.filename().string();
+		}
+
+		FileEntityPtr obj = makeFileEntity(obj_path);
+		obj->addAction(makeCpp2ObjAction(additional_options));
+        
 
         // 可执行文件依赖.o文件
         exe->addPrerequisite(obj);
@@ -356,6 +409,8 @@ bool build_exe()
 
 bool build_gch()
 {
+	assert(false); // vc没有专门的编译头文件的过程
+
     if (headers_to_pc.empty())
         return true;
 
@@ -425,7 +480,8 @@ bool build()
 
         for (auto src : sources) {
             fs::path obj_path = shadow(src);
-            obj_path += ".o";
+            //obj_path += ".o";
+			obj_path += ".obj";
             safe_remove(obj_path);
 
             fs::path dep_path = obj_path;
@@ -439,7 +495,8 @@ bool build()
 
         for (auto h : headers_to_pc) {
             fs::path gch_path = shadow(h);
-            gch_path += ".gch";
+            //gch_path += ".gch";
+			gch_path += ".pch";
             safe_remove(gch_path);
 
             fs::path dep_path = gch_path;
@@ -453,11 +510,12 @@ bool build()
     }
 
     bool success;
-    
-    GchMagic gch_magic(headers_to_pc);
-    success = build_gch();
-    if (!success)
-        return false;
+
+	// vc没有专门的编译头文件的过程，所以将一下几行注释掉。
+    //GchMagic gch_magic(headers_to_pc);
+    //success = build_gch();
+    //if (!success)
+    //    return false;
 
     ShebangMagic shebang_magic(script_file.string());
     success = build_exe();
@@ -556,6 +614,15 @@ void scan(fs::path src_path)
                     return;
                 }
                 headers_to_pc.push_back(a);
+				sources_to_pc.push_back(src_path);
+				source2header_to_pc[src_path] = a;
+				if (headers_to_pc.size() >= 2) {
+					cout << "at the moment, vcpps supports only one precompiled header, but many found:" << endl;
+					for (auto h : headers_to_pc) {
+						cout << h.filename() << endl;
+					}
+					throw 1;
+				}
             }
             else {
                 cout << a << " referenced by " << src_path << " does NOT exsit!"<< endl;

@@ -37,6 +37,10 @@ bool Cpp2ObjAction::execute(const DepInfo& info)
     // birthcert_path += ".birthcert";
 
     string cmd = gcc_compile_cpp_cmd;
+
+	cmd += " ";
+	cmd += m_additional_options;
+
     cmd += " /Fo:";
 
     cmd += " ";
