@@ -318,12 +318,13 @@ bool build_exe()
         //FileEntityPtr obj = makeVulnerableFileEntity(obj_path);
 
 		string additional_options = "";
+		fs::path h_path = headers_to_pc[0];
 		if (headers_to_pc.empty()) { // 如果压根没有预编译头文件
 
 		}
 		else {
 			//fs::path h_path = source2header_to_pc[src_path];
-			fs::path h_path = headers_to_pc[0];
+			//fs::path h_path = headers_to_pc[0];
 			fs::path pch_path = shadow(h_path);
 			pch_path += ".pch";
 
@@ -339,7 +340,7 @@ bool build_exe()
 		}
 
 		FileEntityPtr obj = makeFileEntity(obj_path);
-		obj->addAction(makeCpp2ObjAction(additional_options));
+		obj->addAction(makeCpp2ObjAction(additional_options, h_path));
         
 
         // 可执行文件依赖.o文件
