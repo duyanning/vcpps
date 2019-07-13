@@ -26,8 +26,8 @@ using boost::smatch;
 #include "FileEntity.h"         
 //#include "VulnerableFileEntity.h" 
 #include "PhonyEntity.h"          
-#include "Obj2ExeAction.h"        
-#include "Cpp2ObjAction.h"        
+#include "VcObj2ExeAction.h"        
+#include "VcCpp2ObjAction.h"        
 //#include "Cpp2DepAction.h"        
 #include "H2GchAction.h"          
 #include "UpdateGraphAction.h" 
@@ -298,7 +298,7 @@ bool build_exe()
         lib_options += " -l";
         lib_options += l;
     }
-    exe->addAction(makeObj2ExeAction(lib_options));
+    exe->addAction(makeVcObj2ExeAction(lib_options));
 
     PhonyEntityPtr update_dependency = makePhonyEntity("update dependency graph");
 
@@ -340,7 +340,7 @@ bool build_exe()
 		}
 
 		FileEntityPtr obj = makeFileEntity(obj_path);
-		obj->addAction(makeCpp2ObjAction(additional_options, h_path));
+		obj->addAction(makeVcCpp2ObjAction(additional_options, h_path));
         
 
         // 可执行文件依赖.o文件

@@ -1,25 +1,25 @@
 #include "config.h"
-#include "Obj2ExeAction.h"
+#include "VcObj2ExeAction.h"
 #include "FileEntity.h"
 #include "Loggers.h"
 #include "global.h"
 
-Obj2ExeAction::Obj2ExeAction(string other_options)
+VcObj2ExeAction::VcObj2ExeAction(string other_options)
     :
     m_other_options(other_options)
 {
 }
 
-Obj2ExeActionPtr makeObj2ExeAction(string other_options)
+VcObj2ExeActionPtr makeVcObj2ExeAction(string other_options)
 {
-    return Obj2ExeActionPtr(new Obj2ExeAction(other_options));
+    return VcObj2ExeActionPtr(new VcObj2ExeAction(other_options));
 }
 
-bool Obj2ExeAction::execute(const DepInfo& info)
+bool VcObj2ExeAction::execute(const DepInfo& info)
 {
     // 如果exe依赖的某个.o更新失败，那就无法生成exe
     if (!info.failed.empty()) {
-        //cout << "Obj2ExeAction failed" << endl;
+        //cout << "VcObj2ExeAction failed" << endl;
         return false;
     }
     

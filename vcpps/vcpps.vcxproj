@@ -159,7 +159,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="Cpp2ObjAction.cpp" />
+    <ClCompile Include="VcCpp2ObjAction.cpp" />
     <ClCompile Include="Entity.cpp" />
     <ClCompile Include="FileEntity.cpp" />
     <ClCompile Include="GchMagic.cpp" />
@@ -168,7 +168,7 @@
     <ClCompile Include="Loggers.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MiniLogger.cpp" />
-    <ClCompile Include="Obj2ExeAction.cpp" />
+    <ClCompile Include="VcObj2ExeAction.cpp" />
     <ClCompile Include="PhonyEntity.cpp" />
     <ClCompile Include="samples.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
@@ -185,7 +185,7 @@
     <ClInclude Include="Action.h" />
     <ClInclude Include="Birthcert.h" />
     <ClInclude Include="config.h" />
-    <ClInclude Include="Cpp2ObjAction.h" />
+    <ClInclude Include="VcCpp2ObjAction.h" />
     <ClInclude Include="DepInfo.h" />
     <ClInclude Include="Entity.h" />
     <ClInclude Include="FileEntity.h" />
@@ -197,7 +197,7 @@
     <ClInclude Include="helpers.h" />
     <ClInclude Include="Loggers.h" />
     <ClInclude Include="MiniLogger.h" />
-    <ClInclude Include="Obj2ExeAction.h" />
+    <ClInclude Include="VcObj2ExeAction.h" />
     <ClInclude Include="PhonyEntity.h" />
     <ClInclude Include="samples.h" />
     <ClInclude Include="sha1.hpp" />
